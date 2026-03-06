@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Simonetti - Primeiro Acesso</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #001f3f 0%, #004a99 100%); display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .box { background: #fff; padding: 40px; border-radius: 12px; text-align: center; width: 100%; max-width: 350px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #00c853; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        button:disabled { background: #ccc; }
+        #errorMsg { color: #e74c3c; font-size: 13px; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h2 style="color: #004a99; margin-top: 0;">Finalizar Cadastro</h2>
+        <p style="font-size: 14px; color: #666;">Defina seu nome de usuário e uma nova senha para ativar seu acesso.</p>
+        
+        <input type="text" id="username" placeholder="Usuário">
+        <input type="password" id="newPassword" placeholder="Nova Senha">
+        <input type="password" id="confirmPassword" placeholder="Confirme a Senha">
+        
+        <p id="errorMsg"></p>
+        <button id="btnSave">CONCLUIR CADASTRO</button>
+    </div>
+
+    <script type="module">
+        import { db, auth } from "./js/firebase-config.js";
+        import { onAuthStateChanged, updatePassword, signOut } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+        import { doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+        const btnSalvar = document.getElementById("btnSave");
+        const errorMsg = document.getElementById("errorMsg");
+
+        btnSalvar.addEventListener("click", async () => {
+            const nome = document.getElementById("username").value.trim();
+            const senha = document.getElementById("newPassword").value;
+            const confirma = document.getElementById("confirmPassword").value;
+
+            if (!nome || !senha) { errorMsg.textContent = "Preencha tudo."; return; }
+            if (senha !== confirma) { errorMsg.textContent = "Senhas não conferem."; return; }
+            if (senha.length < 6) { errorMsg.textContent = "Senha curta (min 6)."; return; }
+
+            const user = auth.currentUser;
+            if (!user) return;
+
+            btnSalvar.disabled = true;
+            btnSalvar.textContent = "SALVANDO...";
+
+            try {
+                // 1. Tenta atualizar a senha no Auth
+                await updatePassword(user, senha);
+
+                // 2. CRIA O DOCUMENTO NA COLEÇÃO 'USERS' (O que você pediu)
+                await setDoc(doc(db, "users", user.uid), {
+                    nomeCompleto: nome,
+                    email: user.email,
+                    role: "leitor",        // Liberado como leitor
+                    isFirstLogin: false,   // Marca que já fez o cadastro
+                    dataCadastro: serverTimestamp() // Dia e hora do cadastro
+                });
+
+                alert("Cadastro realizado! Bem-vindo, " + nome);
+                window.location.href = "pagina.html";
+
+            } catch (error) {
+                console.error(error);
+                if (error.code === 'auth/requires-recent-login') {
+                    alert("Sessão expirada. Faça login novamente para mudar a senha.");
+                    await signOut(auth);
+                    window.location.href = "index.html";
+                } else {
+                    errorMsg.textContent = "Erro: " + error.message;
+                    btnSalvar.disabled = false;
+                    btnSalvar.textContent = "CONCLUIR CADASTRO";
+                }
+            }
+        });
+
+        onAuthStateChanged(auth, user => { if (!user) window.location.href = "index.html"; });
+    </script>
+</body>
+</html>
