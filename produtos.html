@@ -7,60 +7,83 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <style>
     :root {
-      --primary: #004a99; --glass: rgba(255, 255, 255, 0.9);
-      --danger: #ff4d4d; --success: #00c853; --gray: #6c757d; --warning: #ffab00; --info: #17a2b8;
+        --primary: #d32f2f;
+        --bg-body: #f5f5f5;
+        --bg-card: #ffffff;
+        --text-dark: #333333;
+        --border: #e0e0e0;
+    
+        /* Adicione estas linhas abaixo: */
+        --info: #0288d1;    /* Azul para Criar SKU */
+        --warning: #f57c00; /* Laranja para Editar */
+        --danger: #c62828;  /* Vermelho para Excluir */
+        --success: #388e3c; /* Verde para Entrada */
+        --gray: #757575;    /* Cinza para Limpar */
     }
+
     body { 
-      background: linear-gradient(135deg, #001f3f 0%, #004a99 100%);
-      background-attachment: fixed; margin: 0; font-family: 'Segoe UI', sans-serif; 
-      color: #333; min-height: 100vh;
+        background-color: var(--bg-body); 
+        margin: 0; 
+        font-family: 'Segoe UI', sans-serif; 
+        color: var(--text-dark); 
+        min-height: 100vh; 
     }
+
+    /* Barra Superior */
     .top-nav { 
-      background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(15px);
-      padding: 10px 20px; display: flex; justify-content: space-between; align-items: center;
-      border-bottom: 1px solid rgba(255,255,255,0.1); color: white;
+        background: var(--primary); 
+        padding: 15px 20px; 
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center; 
+        color: white;
     }
+
     .container { padding: 20px; max-width: 1200px; margin: auto; }
+
+    /* Painéis */
     .glass-panel { 
-      background: var(--glass); backdrop-filter: blur(10px); 
-      border-radius: 12px; padding: 20px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); margin-bottom: 20px;
+        background: var(--bg-card); 
+        border-radius: 8px; 
+        padding: 20px; 
+        border: 1px solid var(--border); 
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
+        margin-bottom: 20px; 
     }
+
     .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; align-items: flex-end; }
     .filter-group { display: flex; flex-direction: column; gap: 5px; }
-    .filter-group label { font-size: 0.75rem; font-weight: bold; color: var(--primary); }
-    input, select { padding: 10px; border: 1px solid #ddd; border-radius: 6px; outline: none; }
+    .filter-group label { font-size: 0.75rem; font-weight: bold; color: var(--primary); text-transform: uppercase; }
     
+    input, select { padding: 10px; border: 1px solid var(--border); border-radius: 4px; outline: none; }
+    
+    /* Tabela */
     table { width: 100%; border-collapse: collapse; background: white; }
-    th { background: #f8f9fa; padding: 12px; text-align: left; font-size: 0.85rem; color: #666; border-bottom: 2px solid #eee; }
-    td { padding: 12px; border-bottom: 1px solid #eee; font-size: 0.9rem; }
+    th { background: #fafafa; padding: 12px; text-align: left; font-size: 0.85rem; color: #555; border-bottom: 2px solid var(--border); }
+    td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
     
-    .child-row { background: #fdfdfd; display: none; }
+    .child-row { background: #f9f9f9; display: none; }
     .child-row.active { display: table-row; }
     
     .btn-action { 
-      padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; 
-      color: white; font-weight: bold; font-size: 0.75rem; transition: 0.2s;
+        padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer; 
+        color: white; font-weight: bold; font-size: 0.75rem; transition: 0.2s; background: var(--primary);
     }
-    .btn-action:hover { opacity: 0.8; transform: translateY(-1px); }
+    .btn-action:hover { filter: brightness(1.2); }
 
+    /* Modal */
     .modal { 
-      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-      background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; 
+        display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+        background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; 
     }
-    .modal-content { background: white; padding: 25px; border-radius: 12px; width: 90%; max-width: 450px; }
+    .modal-content { background: white; padding: 25px; border-radius: 8px; width: 90%; max-width: 450px; }
     .modal-content input, .modal-content select { width: 100%; margin-bottom: 15px; box-sizing: border-box; }
 
-    /* --- AJUSTE PARA CELULAR (Rolar lateralmente) --- */
     @media (max-width: 768px) {
-      .table-responsive {
-        overflow-x: auto !important;
-        -webkit-overflow-scrolling: touch;
-      }
-      table {
-        min-width: 800px; /* Garante que a tabela não "esmague" e force o scroll */
-      }
+        .table-responsive { overflow-x: auto !important; }
+        table { min-width: 800px; }
     }
-  </style>
+</style>
 </head>
 <body>
 
@@ -81,7 +104,7 @@
   <div class="container">
     <div class="glass-panel">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-        <h2 style="margin:0; color:var(--primary); font-size:1.4rem;">Pulmão de Peças</h2>
+        <h2 style="margin:0; color:var(--primary); font-size:1.4rem;">Cadastro de Volumes</h2>
         <button id="btnAbrirModalProd" onclick="window.modalNovoProduto()" class="btn-action" style="background:var(--success); display:none;">+ NOVO PRODUTO</button>
       </div>
       
