@@ -78,16 +78,16 @@ function renderizarTudo() {
     areaPendentes.innerHTML = pendentes.map(v => {
         const p = dbState.produtos[v.produtoId] || {nome: "---", fornNome: "---", codigo: "---"};
         return `
-            <div class="vol-item-pendente" style="background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; margin-bottom:10px; border-left:4px solid var(--warning); display:flex; justify-content:space-between; align-items:center;">
+            <div class="vol-item-pendente" style="background:#fff; padding:10px; border-radius:8px; margin-bottom:10px; border-left:4px solid var(--warning); display:flex; justify-content:space-between; align-items:center; border: 1px solid var(--border);">
                 <div style="flex:1">
-                    <small style="color:var(--warning)">${p.fornNome} | M: ${p.codigo}</small><br>
-                    <strong style="color:white; font-size:12px;">${p.nome}</strong><br>
-                    <small style="color:#aaa;">SKU: ${v.codigo} | ${v.descricao} | Qtd: ${v.quantidade}</small>
+                    <small style="color:black; font-weight:bold;">${p.fornNome} | M: ${p.codigo}</small><br>
+                    <strong style="color:black; font-size:13px;">${p.nome}</strong><br>
+                    <small style="color:#333;">SKU: ${v.codigo} | ${v.descricao} | <b style="color:var(--primary);">Qtd: ${v.quantidade}</b></small>
                 </div>
                 ${userRole !== 'leitor' ? `
                     <div style="display:flex; flex-direction:column; gap:5px;">
                         <button onclick="window.abrirModalMover('${v.id}')" class="btn-mover">GUARDAR</button>
-                        <button onclick="window.abrirModalSaida('${v.id}')" class="btn-mover" style="background:var(--danger); color:white;">SAÍDA</button>
+                        <button onclick="window.abrirModalSaida('${v.id}')" class="btn-danger">SAÍDA</button>
                     </div>
                 ` : ''}
             </div>
