@@ -136,7 +136,11 @@ function renderizarTudo() {
     document.getElementById("countDisplay").innerText = totalVisiveis;
 }
 
+// No estoque.js, substitua a função abrirDetalhesEndereco por esta:
 window.abrirDetalhesEndereco = (endId, volumes) => {
+    // Salva o ID e os volumes atuais no estado global para consulta posterior
+    dbState.ultimoEnderecoAberto = { id: endId, volumes: volumes }; 
+    
     const end = dbState.enderecos.find(e => e.id === endId);
     
     let htmlVols = volumes.map(v => {
@@ -150,8 +154,8 @@ window.abrirDetalhesEndereco = (endId, volumes) => {
                 </div>
                 ${userRole !== 'leitor' ? `
                     <div class="actions">
-                        <button onclick="window.fecharModal(); setTimeout(() => window.abrirModalMover('${v.id}'), 200)" title="Mover"><i class="fas fa-exchange-alt"></i></button>
-                        <button onclick="window.fecharModal(); setTimeout(() => window.abrirModalSaida('${v.id}'), 200)" style="color:var(--danger)" title="Saída"><i class="fas fa-sign-out-alt"></i></button>
+                        <button onclick="window.abrirModalMover('${v.id}')" title="Mover"><i class="fas fa-exchange-alt"></i></button>
+                        <button onclick="window.abrirModalSaida('${v.id}')" style="color:var(--danger)" title="Saída"><i class="fas fa-sign-out-alt"></i></button>
                     </div>
                 ` : ''}
             </div>`;
@@ -163,8 +167,6 @@ window.abrirDetalhesEndereco = (endId, volumes) => {
         </div>
     `, () => window.fecharModal());
     
-    // --- AJUSTE AQUI ---
-    // Esconde o botão "Voltar" e deixa apenas o botão principal (que definimos como Fechar)
     document.querySelector("#modalMaster button[onclick='window.fecharModal()']").style.display = "none";
     document.querySelector("#modalMaster .btn-primary").innerText = "Fechar";
 };
@@ -300,5 +302,18 @@ function openModalBase(title, html, confirmAction) {
     
     document.querySelector("#modalMaster .btn-primary").onclick = confirmAction;
 }
-window.fecharModal = () => document.getElementById("modalMaster").style.display = "none";
+// No final do estoque.js, substitua a função fecharModal por esta:
+window.fecharModal = () => {
+    const modalTitle = document.getElementById("modalTitle").innerText;
+    
+    // Se estivermos saindo de um modal de ação e houver um endereço anterior salvo...
+    if ((modalTitle.includes("Movimentar") || modalTitle.includes("Saída")) && dbState.ultimoEnderecoAberto) {
+        // Reabre os detalhes do endereço
+        window.abrirDetalhesEndereco(dbState.ultimoEnderecoAberto.id, dbState.ultimoEnderecoAberto.volumes);
+    } else {
+        // Caso contrário, fecha tudo e limpa o histórico
+        document.getElementById("modalMaster").style.display = "none";
+        dbState.ultimoEnderecoAberto = null; 
+    }
+};
 window.logout = () => signOut(auth).then(() => window.location.href = "index.html");
