@@ -180,7 +180,7 @@ window.abrirModalNovoEnd = () => {
         if(!rua || !mod) return alert("Preencha Rua e Módulo!");
         try {
             await addDoc(collection(db, "enderecos"), { rua: rua, modulo: mod });
-            window.fecharModal(); loadAll();
+            window.fecharModal();
         } catch(e) { alert("Erro ao salvar endereço"); }
     });
 };
@@ -238,7 +238,7 @@ window.confirmarMovimento = async () => {
             para: `RUA ${endDest.rua} MOD ${endDest.modulo}`
         });
 
-        window.fecharModal();
+        await window.fecharModal(); // Adicionado await aqui
     } catch(e) { alert("Erro ao mover"); }
 };
 
@@ -274,7 +274,7 @@ window.confirmarSaida = async () => {
                 tipo: "Saída", produto: vol.descricao, quantidade: qtd, usuario: usernameDB, data: serverTimestamp(),
                 de: vol.enderecoId ? "ESTOQUE" : "PENDENTE", para: "BAIXA"
             });
-            window.fecharModal();
+            await window.fecharModal(); // Adicionado await aqui
         } catch(e) { alert("Erro na saída"); }
     }
 };
@@ -297,25 +297,16 @@ function openModalBase(title, html, confirmAction) {
     document.querySelector("#modalMaster .btn-primary").onclick = confirmAction;
 }
 
-// Substitua sua função fecharModal por esta versão otimizada
 window.fecharModal = async () => {
     const modalTitle = document.getElementById("modalTitle").innerText;
-    
-    // Fecha o modal visualmente
     document.getElementById("modalMaster").style.display = "none";
-    
-    // Recarrega todos os dados do banco para garantir o tempo real
     await loadAll();
     
-    // Se estávamos visualizando um endereço (detalhes), reabre ele com os dados novos
     if ((modalTitle.includes("Movimentar") || modalTitle.includes("Saída")) && dbState.ultimoEnderecoAberto) {
-        // Pequeno atraso para garantir que o loadAll terminou
         setTimeout(() => {
             window.abrirDetalhesEndereco(dbState.ultimoEnderecoAberto.id);
         }, 100);
     } else {
-        // Se era apenas uma ação em Pendentes, o loadAll() já rodou e o renderizarTudo() 
-        // já atualizou a tela automaticamente.
         dbState.ultimoEnderecoAberto = null; 
     }
 };
