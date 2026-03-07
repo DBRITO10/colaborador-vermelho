@@ -71,8 +71,8 @@ function renderizarTudo() {
         const p = dbState.produtos[v.produtoId] || {};
         const condicao = v.quantidade > 0 && (!v.enderecoId || v.enderecoId === "");
         return condicao && (!fCod || p.codigo?.includes(fCod) || v.codigo?.includes(fCod)) &&
-                           (!fForn || p.fornId === fForn) &&
-                           (!fDesc || p.nome?.includes(fDesc) || v.descricao?.includes(fDesc));
+                          (!fForn || p.fornId === fForn) &&
+                          (!fDesc || p.nome?.includes(fDesc) || v.descricao?.includes(fDesc));
     });
     document.getElementById("countPendentes").innerText = pendentes.length;
     areaPendentes.innerHTML = pendentes.map(v => {
@@ -103,8 +103,8 @@ function renderizarTudo() {
             const p = dbState.produtos[v.produtoId] || {};
             const noLocal = v.enderecoId === end.id && v.quantidade > 0;
             return noLocal && (!fCod || p.codigo?.includes(fCod) || v.codigo?.includes(fCod)) &&
-                              (!fForn || p.fornId === fForn) &&
-                              (!fDesc || p.nome?.includes(fDesc) || v.descricao?.includes(fDesc));
+                            (!fForn || p.fornId === fForn) &&
+                            (!fDesc || p.nome?.includes(fDesc) || v.descricao?.includes(fDesc));
         });
 
         if (volsNoEndereco.length > 0 || (!fCod && !fForn && !fDesc)) {
@@ -113,8 +113,7 @@ function renderizarTudo() {
             const card = document.createElement('div');
             card.className = "card-endereco";
             
-            // FUNÇÃO DE CLIQUE PARA EXPANDIR
-            card.onclick = () => window.abrirDetalhesEndereco(end.id, volsNoEndereco);
+            card.onclick = () => window.abrirDetalhesEndereco(end.id);
 
             card.innerHTML = `
                 <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; padding: 10px;">
@@ -136,11 +135,9 @@ function renderizarTudo() {
     document.getElementById("countDisplay").innerText = totalVisiveis;
 }
 
-// No estoque.js, substitua a função abrirDetalhesEndereco por esta:
-window.abrirDetalhesEndereco = (endId, volumes) => {
-    // Salva o ID e os volumes atuais no estado global para consulta posterior
-    dbState.ultimoEnderecoAberto = { id: endId, volumes: volumes }; 
-    
+window.abrirDetalhesEndereco = (endId) => {
+    dbState.ultimoEnderecoAberto = { id: endId }; 
+    const volumes = dbState.volumes.filter(v => v.enderecoId === endId && v.quantidade > 0);
     const end = dbState.enderecos.find(e => e.id === endId);
     
     let htmlVols = volumes.map(v => {
@@ -163,7 +160,7 @@ window.abrirDetalhesEndereco = (endId, volumes) => {
 
     openModalBase(`Endereço: RUA ${end.rua} - MOD ${end.modulo}`, `
         <div style="max-height: 400px; overflow-y: auto;">
-            ${htmlVols || '<div style="text-align:center; padding:15px; color:#999;">Vazio</div>'}
+            ${htmlVols.length > 0 ? htmlVols : '<div style="text-align:center; padding:15px; color:#999;">Vazio</div>'}
         </div>
     `, () => window.fecharModal());
     
@@ -241,7 +238,7 @@ window.confirmarMovimento = async () => {
             para: `RUA ${endDest.rua} MOD ${endDest.modulo}`
         });
 
-        window.fecharModal(); loadAll();
+        window.fecharModal();
     } catch(e) { alert("Erro ao mover"); }
 };
 
@@ -277,7 +274,7 @@ window.confirmarSaida = async () => {
                 tipo: "Saída", produto: vol.descricao, quantidade: qtd, usuario: usernameDB, data: serverTimestamp(),
                 de: vol.enderecoId ? "ESTOQUE" : "PENDENTE", para: "BAIXA"
             });
-            window.fecharModal(); loadAll();
+            window.fecharModal();
         } catch(e) { alert("Erro na saída"); }
     }
 };
@@ -296,24 +293,20 @@ function openModalBase(title, html, confirmAction) {
     document.getElementById("modalTitle").innerText = title;
     document.getElementById("modalBody").innerHTML = html;
     document.getElementById("modalMaster").style.display = "flex";
-    
-    // Garante que o botão de voltar apareça novamente nos outros modais
     document.querySelector("#modalMaster button[onclick='window.fecharModal()']").style.display = "block"; 
-    
     document.querySelector("#modalMaster .btn-primary").onclick = confirmAction;
 }
-// No final do estoque.js, substitua a função fecharModal por esta:
-window.fecharModal = () => {
+
+window.fecharModal = async () => {
     const modalTitle = document.getElementById("modalTitle").innerText;
     
-    // Se estivermos saindo de um modal de ação e houver um endereço anterior salvo...
     if ((modalTitle.includes("Movimentar") || modalTitle.includes("Saída")) && dbState.ultimoEnderecoAberto) {
-        // Reabre os detalhes do endereço
-        window.abrirDetalhesEndereco(dbState.ultimoEnderecoAberto.id, dbState.ultimoEnderecoAberto.volumes);
+        await loadAll();
+        window.abrirDetalhesEndereco(dbState.ultimoEnderecoAberto.id);
     } else {
-        // Caso contrário, fecha tudo e limpa o histórico
         document.getElementById("modalMaster").style.display = "none";
         dbState.ultimoEnderecoAberto = null; 
     }
 };
+
 window.logout = () => signOut(auth).then(() => window.location.href = "index.html");
