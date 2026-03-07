@@ -297,14 +297,25 @@ function openModalBase(title, html, confirmAction) {
     document.querySelector("#modalMaster .btn-primary").onclick = confirmAction;
 }
 
+// Substitua sua função fecharModal por esta versão otimizada
 window.fecharModal = async () => {
     const modalTitle = document.getElementById("modalTitle").innerText;
     
+    // Fecha o modal visualmente
+    document.getElementById("modalMaster").style.display = "none";
+    
+    // Recarrega todos os dados do banco para garantir o tempo real
+    await loadAll();
+    
+    // Se estávamos visualizando um endereço (detalhes), reabre ele com os dados novos
     if ((modalTitle.includes("Movimentar") || modalTitle.includes("Saída")) && dbState.ultimoEnderecoAberto) {
-        await loadAll();
-        window.abrirDetalhesEndereco(dbState.ultimoEnderecoAberto.id);
+        // Pequeno atraso para garantir que o loadAll terminou
+        setTimeout(() => {
+            window.abrirDetalhesEndereco(dbState.ultimoEnderecoAberto.id);
+        }, 100);
     } else {
-        document.getElementById("modalMaster").style.display = "none";
+        // Se era apenas uma ação em Pendentes, o loadAll() já rodou e o renderizarTudo() 
+        // já atualizou a tela automaticamente.
         dbState.ultimoEnderecoAberto = null; 
     }
 };
