@@ -4,157 +4,18 @@
     <meta charset="UTF-8">
     <title>Simonetti - Primeiro Acesso</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="css/style.css">
-    <style>
-    :root {
-        --primary: #d32f2f;      /* Vermelho destaque */
-        --bg-body: #f5f5f5;     /* Fundo cinza claro */
-        --bg-card: #ffffff;     /* Branco */
-        --text-dark: #333333;   /* Texto escuro */
-        --border: #e0e0e0;      /* Bordas sutis */
-        --danger: #d32f2f;
-    }
-
-    body { 
-        font-family: 'Segoe UI', sans-serif; 
-        background-color: var(--bg-body); 
-        display: flex; 
-        justify-content: center; 
-        align-items: center; 
-        height: 100vh; 
-        margin: 0; 
-        color: var(--text-dark);
-    }
-
-    /* Caixa centralizada e limpa */
-    .box { 
-        background: var(--bg-card); 
-        padding: 40px; 
-        border-radius: 12px; 
-        text-align: center; 
-        width: 100%; 
-        max-width: 350px; 
-        border: 1px solid var(--border);
-        box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
-    }
-
-    input { 
-        width: 100%; 
-        padding: 12px; 
-        margin: 10px 0; 
-        border: 1px solid var(--border); 
-        border-radius: 6px; 
-        box-sizing: border-box; 
-        font-size: 16px; /* Melhor para o teclado do celular não dar zoom */
-        outline: none;
-        transition: 0.2s;
-    }
-
-    input:focus {
-        border-color: var(--primary);
-    }
-
-    /* Botão vermelho padronizado */
-    button { 
-        width: 100%; 
-        padding: 12px; 
-        background: var(--primary); 
-        color: white; 
-        border: none; 
-        border-radius: 6px; 
-        cursor: pointer; 
-        font-weight: bold; 
-        margin-top: 10px; 
-        transition: 0.3s;
-        font-size: 1rem;
-    }
-
-    button:hover { 
-        filter: brightness(1.1);
-        transform: translateY(-1px);
-    }
-
-    button:disabled { 
-        background: #ccc; 
-        cursor: not-allowed;
-        transform: none;
-    }
-
-    #errorMsg { 
-        color: var(--danger); 
-        font-size: 13px; 
-        margin-top: 15px; 
-        font-weight: 500;
-    }
-</style>
+    <link rel="stylesheet" href="css/first_login.css">
 </head>
 <body>
+
     <div class="box">
-        <h2 style="color: #000000; margin-top: 0;">Finalizar Cadastro</h2>
-        <p style="font-size: 14px; color: #666;">Defina seu nome de usuário e uma nova senha para ativar seu acesso.</p>
-        
-        <input type="text" id="username" placeholder="Usuário">
-        <input type="password" id="newPassword" placeholder="Nova Senha">
-        <input type="password" id="confirmPassword" placeholder="Confirme a Senha">
-        
-        <p id="errorMsg"></p>
-        <button id="btnSave">CONCLUIR CADASTRO</button>
+        <h2>Primeiro Acesso</h2>
+        <input type="text" id="nome" placeholder="Nome Completo">
+        <input type="password" id="senha" placeholder="Nova Senha">
+        <button id="btnSalvar">CONCLUIR CADASTRO</button>
+        <p id="errorMsg" style="color:red; font-size: 0.8rem;"></p>
     </div>
 
-    <script type="module">
-        import { db, auth } from "./js/firebase-config.js";
-        import { onAuthStateChanged, updatePassword, signOut } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-        import { doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
-
-        const btnSalvar = document.getElementById("btnSave");
-        const errorMsg = document.getElementById("errorMsg");
-
-        btnSalvar.addEventListener("click", async () => {
-            const nome = document.getElementById("username").value.trim();
-            const senha = document.getElementById("newPassword").value;
-            const confirma = document.getElementById("confirmPassword").value;
-
-            if (!nome || !senha) { errorMsg.textContent = "Preencha tudo."; return; }
-            if (senha !== confirma) { errorMsg.textContent = "Senhas não conferem."; return; }
-            if (senha.length < 6) { errorMsg.textContent = "Senha curta (min 6)."; return; }
-
-            const user = auth.currentUser;
-            if (!user) return;
-
-            btnSalvar.disabled = true;
-            btnSalvar.textContent = "SALVANDO...";
-
-            try {
-                // 1. Tenta atualizar a senha no Auth
-                await updatePassword(user, senha);
-
-                // 2. CRIA O DOCUMENTO NA COLEÇÃO 'USERS' (O que você pediu)
-                await setDoc(doc(db, "users", user.uid), {
-                    nomeCompleto: nome,
-                    email: user.email,
-                    role: "leitor",        // Liberado como leitor
-                    isFirstLogin: false,   // Marca que já fez o cadastro
-                    dataCadastro: serverTimestamp() // Dia e hora do cadastro
-                });
-
-                alert("Cadastro realizado! Bem-vindo, " + nome);
-                window.location.href = "pagina.html";
-
-            } catch (error) {
-                console.error(error);
-                if (error.code === 'auth/requires-recent-login') {
-                    alert("Sessão expirada. Faça login novamente para mudar a senha.");
-                    await signOut(auth);
-                    window.location.href = "index.html";
-                } else {
-                    errorMsg.textContent = "Erro: " + error.message;
-                    btnSalvar.disabled = false;
-                    btnSalvar.textContent = "CONCLUIR CADASTRO";
-                }
-            }
-        });
-
-        onAuthStateChanged(auth, user => { if (!user) window.location.href = "index.html"; });
-    </script>
+    <script type="module" src="js/first_login.js"></script>
 </body>
 </html>
