@@ -32,7 +32,7 @@ async function realizarLogin() {
         if (!userDoc.exists() || userDoc.data().isFirstLogin !== false) {
             window.location.href = "first_login.html";
         } else {
-            window.location.href = "portal.html";
+            window.location.href = "pagina.html";
         }
     } catch (e) {
         btnLogin.innerText = "ENTRAR";
