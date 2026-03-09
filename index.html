@@ -5,23 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simonetti - Gestão de Estoque</title>
     <link rel="stylesheet" href="css/style.css">
-    <style>
-    #error {
-        display: none; /* Escondido por padrão para não ocupar espaço */
-        min-height: 20px;
-        margin-top: 15px;
-        padding: 10px 15px;
-        font-weight: 600;
-        font-size: 0.85rem;
-        
-        /* Estilização Clean Red & White */
-        background-color: #feeceb; 
-        color: #c62828;      /* Cor corrigida para manter consistência */
-        border: 1px solid #f8d7da; 
-        border-radius: 6px;        
-        text-align: center;
-    }
-    </style>
 </head>
 <body>
     <div class="login-container">
@@ -45,56 +28,6 @@
         </div>
     </div>
 
-<script type="module">
-    import { db, auth } from "./js/firebase-config.js";
-    import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-    import { doc, getDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
-
-    const emailInput = document.getElementById("email");
-    const passInput = document.getElementById("password");
-    const btnLogin = document.getElementById("btnLogin");
-    const errorMsg = document.getElementById("error");
-
-    async function realizarLogin() {
-        const email = emailInput.value;
-        const password = passInput.value;
-
-        // Limpa e esconde o erro antes de nova tentativa
-        errorMsg.style.display = "none";
-        errorMsg.innerText = "";
-
-        if (!email || !password) {
-            errorMsg.innerText = "❌ Preencha todos os campos.";
-            errorMsg.style.display = "block"; // Exibe o erro
-            return;
-        }
-
-        btnLogin.innerText = "CARREGANDO...";
-        btnLogin.disabled = true;
-
-        try {
-            const userCredential = await signInWithEmailAndPassword(auth, email, password);
-            const uid = userCredential.user.uid;
-            
-            const userDoc = await getDoc(doc(db, "users", uid));
-            
-            if (!userDoc.exists() || userDoc.data().isFirstLogin !== false) {
-                window.location.href = "first_login.html";
-            } else {
-                window.location.href = "pagina.html";
-            }
-        } catch (e) {
-            btnLogin.innerText = "ENTRAR";
-            btnLogin.disabled = false;
-            errorMsg.innerText = "❌ Usuário ou senha incorretos.";
-            errorMsg.style.display = "block"; // Exibe o erro
-        }
-    }
-
-    btnLogin.onclick = realizarLogin;
-    [emailInput, passInput].forEach(input => {
-        input.addEventListener('keypress', (e) => { if (e.key === 'Enter') realizarLogin(); });
-    });
-</script>
+    <script type="module" src="js/login.js"></script>
 </body>
-</html>
+</html>    
